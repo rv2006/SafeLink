@@ -1,0 +1,25 @@
+{
+  "manifest_version": 3,
+  "name": "SafeLink Privacy Guard",
+  "version": "1.0",
+  "description": "A local-first extension to warn against suspicious links without compromising privacy.",
+
+  "icons": {
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  },
+
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["analysis.js", "content.js"]
+    }
+  ],
+
+  "web_accessible_resources": [
+    {
+      "resources": ["blacklist.txt"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}
