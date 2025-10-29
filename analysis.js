@@ -16,31 +16,30 @@ const SAFE_DOMAINS = [
   'paypal.com',
   // You can add your bank's website here
 ];
-
 /**
  * This is our main analysis function.
- * It will be called by content.js and will return a "reason" if the URL is unsafe.
+ * It now accepts the 'settings' object and will only run checks that are enabled.
  */
-function analyzeUrl(url, domain, blacklist) {
-  // Check 1: Is it unencrypted?
-  if (isHttp(url)) {
+function analyzeUrl(url, domain, blacklist, settings) {
+  // Check 1: Is it unencrypted AND is the check enabled?
+  // THE TYPO WAS ON THIS LINE
+  if (settings.checkHttp && isHttp(url)) {
     return 'Unencrypted (HTTP)';
   }
 
-  // Check 2: Is it on our manually-added blacklist?
-  if (isBlacklisted(domain, blacklist)) {
+  // Check 2: Is it on our blacklist AND is the check enabled?
+  if (settings.checkBlacklist && isBlacklisted(domain, blacklist)) {
     return 'On Blacklist';
   }
 
-  // Check 3: Is it an "imposter" (typosquatting)?
-  if (isTyposquatted(domain)) {
+  // Check 3: Is it an "imposter" AND is the check enabled?
+  if (settings.checkImposter && isTyposquatted(domain)) {
     return 'Possible Imposter';
   }
 
   // If no checks failed, it's safe.
   return null;
 }
-
 // --- CHECK 1: HTTP ---
 function isHttp(url) {
   return url.startsWith('http://');

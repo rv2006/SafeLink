@@ -19,9 +19,25 @@
 
     <hr>
 
+    <div class="settings-container">
+      <div class="setting-item">
+        <label for="check-imposter">Imposter Check (Typosquatting)</label>
+        <input type="checkbox" id="check-imposter" class="toggle">
+      </div>
+      <div class="setting-item">
+        <label for="check-blacklist">Blacklist Check</label>
+        <input type="checkbox" id="check-blacklist" class="toggle">
+      </div>
+      <div class="setting-item">
+        <label for="check-http">Unencrypted (HTTP) Check</label>
+        <input type="checkbox" id="check-http" class="toggle">
+      </div>
+    </div>
+
+    <hr>
     <div id="blacklist-container">
       <p id="loading-message">Loading...</p>
-      </div>
+    </div>
   </div>
   <script src="popup.js"></script>
 </body>

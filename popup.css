@@ -110,3 +110,56 @@ hr {
   color: #888;
   text-align: center;
 }
+/* --- Settings Section --- */
+
+.settings-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px; /* Adds space between setting items */
+  margin-bottom: 10px;
+}
+
+.setting-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.setting-item label {
+  color: #333;
+  font-weight: 500;
+}
+
+/* This creates the modern "toggle" switch */
+.toggle {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  position: relative;
+  width: 36px;
+  height: 20px;
+  background-color: #ccc;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.toggle::before {
+  content: '';
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  background-color: white;
+  border-radius: 50%;
+  top: 2px;
+  left: 2px;
+  transition: transform 0.2s ease;
+}
+
+.toggle:checked {
+  background-color: #007bff;
+}
+
+.toggle:checked::before {
+  transform: translateX(16px);
+}

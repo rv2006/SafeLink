@@ -4,28 +4,50 @@
 // 'DOMContentLoaded' fires when the popup.html has finished loading.
 document.addEventListener('DOMContentLoaded', () => {
 
+  // --- Get references to all our HTML elements ---
   const input = document.getElementById('domain-input');
   const addButton = document.getElementById('add-button');
   const container = document.getElementById('blacklist-container');
   const loadingMessage = document.getElementById('loading-message');
 
+  // New setting toggles
+  const checkImposter = document.getElementById('check-imposter');
+  const checkBlacklist = document.getElementById('check-blacklist');
+  const checkHttp = document.getElementById('check-http');
+
   let currentBlacklist = []; // This will hold our list in memory
 
+  // Object to hold our settings
+  const settings = {
+    checkImposter: true,  // Default values
+    checkBlacklist: true,
+    checkHttp: true
+  };
+
   /**
-   * Main function to load the list from storage and display it.
+   * Main function to load ALL data from storage (list AND settings)
    */
-  async function loadBlacklist() {
-    const data = await chrome.storage.local.get('safelink_blacklist');
+  async function loadData() {
+    // We use 'null' to get ALL items from storage
+    const data = await chrome.storage.local.get(null);
+
+    // Load blacklist
     currentBlacklist = data.safelink_blacklist || [];
+    
+    // Load settings, using defaults if they don't exist yet
+    settings.checkImposter = data.safelink_settings?.checkImposter ?? true;
+    settings.checkBlacklist = data.safelink_settings?.checkBlacklist ?? true;
+    settings.checkHttp = data.safelink_settings?.checkHttp ?? true;
+
+    // Update the UI
     renderBlacklist();
+    renderSettings();
   }
 
   /**
    * Re-draws the entire blacklist in the UI.
-   * This is called after we load, add, or remove an item.
    */
   function renderBlacklist() {
-    // 1. Clear the current list
     container.innerHTML = ''; 
 
     if (currentBlacklist.length === 0) {
@@ -34,33 +56,34 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    // 2. Loop through the list and create an HTML element for each item
     currentBlacklist.forEach((domain, index) => {
       const listItem = document.createElement('div');
       listItem.className = 'list-item';
 
-      // Create the domain name text
       const domainName = document.createElement('span');
       domainName.className = 'domain-name';
       domainName.textContent = domain;
 
-      // Create the "Remove" button
       const removeButton = document.createElement('button');
       removeButton.className = 'remove-button';
-      removeButton.textContent = '×'; // This is a "times" symbol
+      removeButton.textContent = '×';
       
-      // Add an event listener to the remove button
-      // We use 'data-index' to know which item to remove
       removeButton.dataset.index = index;
       removeButton.addEventListener('click', handleRemove);
 
-      // Add the text and button to the list item
       listItem.appendChild(domainName);
       listItem.appendChild(removeButton);
-
-      // Add the list item to the main container
       container.appendChild(listItem);
     });
+  }
+
+  /**
+   * Updates the toggle switches to match our loaded settings.
+   */
+  function renderSettings() {
+    checkImposter.checked = settings.checkImposter;
+    checkBlacklist.checked = settings.checkBlacklist;
+    checkHttp.checked = settings.checkHttp;
   }
 
   /**
@@ -71,34 +94,29 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /**
+   * Saves the 'settings' object back into storage.
+   */
+  async function saveSettings() {
+    // We save the settings under a *new* key
+    await chrome.storage.local.set({ safelink_settings: settings });
+  }
+
+  /**
    * Event handler for the "Add" button.
    */
   async function handleAdd() {
     const newDomain = input.value.trim().toLowerCase();
-
-    // Clean the input (remove http://, www., etc.)
     const cleanDomain = newDomain.replace(/^(?:https?:\/\/)?(?:www\.)?/i, '').split('/')[0];
 
-    if (cleanDomain.length === 0) {
-      return; // Do nothing if input is empty
-    }
-
-    // Check for duplicates
+    if (cleanDomain.length === 0) return;
     if (currentBlacklist.includes(cleanDomain)) {
-      input.value = ''; // Clear input
-      return; // Do nothing if it's already on the list
+      input.value = '';
+      return;
     }
 
-    // 1. Add to our local array
     currentBlacklist.push(cleanDomain);
-    
-    // 2. Save the *entire* updated array to storage
     await saveBlacklist();
-    
-    // 3. Re-draw the UI
     renderBlacklist();
-    
-    // 4. Clear the input box
     input.value = '';
   }
 
@@ -106,32 +124,42 @@ document.addEventListener('DOMContentLoaded', () => {
    * Event handler for the "Remove" buttons.
    */
   async function handleRemove(event) {
-    // Get the index from the 'data-index' attribute we set
     const indexToRemove = parseInt(event.target.dataset.index, 10);
-
-    // 1. Remove the item from our local array
     currentBlacklist.splice(indexToRemove, 1);
-    
-    // 2. Save the updated array to storage
     await saveBlacklist();
-    
-    // 3. Re-draw the UI
     renderBlacklist();
+  }
+
+  /**
+   * Event handler for when a setting toggle is clicked.
+   */
+  async function handleSettingChange(event) {
+    // 'event.target.id' will be "check-imposter", "check-blacklist", etc.
+    const key = event.target.id.split('-')[1]; // "imposter", "blacklist", "http"
+    const value = event.target.checked; // true or false
+
+    if (key === 'imposter') settings.checkImposter = value;
+    if (key === 'blacklist') settings.checkBlacklist = value;
+    if (key === 'http') settings.checkHttp = value;
+
+    // Save the updated settings object
+    await saveSettings();
   }
 
   // --- Start the script ---
   
-  // 1. Add listeners to the "Add" button
+  // 1. Add listeners to the "Add" button and "Enter" key
   addButton.addEventListener('click', handleAdd);
-  
-  // 2. Allow pressing "Enter" to add a domain
   input.addEventListener('keypress', (event) => {
-    if (event.key === 'Enter') {
-      handleAdd();
-    }
+    if (event.key === 'Enter') handleAdd();
   });
 
-  // 3. Load the initial list from storage
-  loadBlacklist();
+  // 2. Add listeners to the new setting toggles
+  checkImposter.addEventListener('change', handleSettingChange);
+  checkBlacklist.addEventListener('change', handleSettingChange);
+  checkHttp.addEventListener('change', handleSettingChange);
+
+  // 3. Load all initial data (blacklist AND settings)
+  loadData();
 
 });
