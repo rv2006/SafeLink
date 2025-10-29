@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>SafeLink Test Page</title>
+    <style>
+        body { font-family: sans-serif; font-size: 20px; line-height: 2; padding: 20px; }
+        h1 { color: #333; }
+        a { color: #007bff; }
+    </style>
+</head>
+<body>
+    <h1>SafeLink Test Page</h1>
+    <p>Hover your mouse over the links below to test the extension.</p>
+
+    <h3>Blacklist Test</h3>
+    <a href="https://chatgpt.com">https://chatgpt.com</a> (This should be ⚠️)
+
+    <h3>Imposter (Typosquatting) Test</h3>
+    <a href="https://www.amaz0n.com">https://www.amaz0n.com</a> (This should be ⚠️)
+    <br>
+    <a href="https://www.paypa1.com">https://www.paypa1.com</a> (This should be ⚠️)
+
+    <h3>Unencrypted (HTTP) Test</h3>
+    <a href="http://example.com">http://example.com</a> (This should be ⚠️)
+
+    <h3>Safe Link Test</h3>
+    <a href="https://www.google.com">https://www.google.com</a> (This should have NO icon)
+</body>
+</html>
